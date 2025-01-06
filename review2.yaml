@@ -1,0 +1,43 @@
+1. Install Jupyter in the Spark Master Container:
+  ? Modify the docker-compose.yml file to include Jupyter Notebook setup in the spark-master service
+  : Copy code:
+    services:
+      spark-master:
+        image: bitnami/spark:latest
+        container_name: spark-master
+        ports:
+          - "8080:8080"
+          - "7077:7077"
+          - "8888:8888" # Jupyter Notebook
+        environment:
+          - SPARK_MODE=master
+          - SPARK_RPC_AUTHENTICATION_ENABLED=no
+          - SPARK_RPC_ENCRYPTION_ENABLED=no
+          - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+        volumes:
+          - ./scripts:/scripts
+          - ./data:/data
+          - ./processed_data:/processed_data
+        command: >
+          sh -c "apt-get update &&
+                apt-get install -y python3-pip &&
+                pip3 install notebook pyspark &&
+                start-spark.sh"
+2. Create a Jupyter Notebook: Place your Jupyter Notebook file (e.g., process_data.ipynb) in the scripts folder.
+3. Start the Cluster:
+  Bring up the cluster: docker-compose up -d
+4. Access Jupyter Notebook:
+  Open a terminal inside the spark-master container: docker exec -it spark-master bash
+  Start the Jupyter Notebook server:
+    jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --no-browser
+    Copy the token URL provided in the terminal output.
+    Open your browser and go to http://localhost:8888, then paste the token.
+5. Edit and Run the Notebook:
+  Use the web interface to open your process_data.ipynb notebook.
+  Execute your PySpark code as needed.
+6. Save Outputs: You can write outputs (e.g., processed data and models) to the mounted directories (/data and /processed_data).
+
+7. Exit and Stop:
+  After finishing: Exit the Jupyter Notebook interface.
+  Stop the cluster: docker-compose down
+# docker logs jupyter-notebook at terminal to see the password
