@@ -19,7 +19,7 @@ df = spark.read.csv(input_path, header=True, inferSchema=True)
 # id,client_id,card_brand,card_type,card_number,expires,cvv,has_chip,num_cards_issued,credit_limit,acct_open_date,year_pin_last_changed,card_on_dark_web
 
 # Assemble features
-"""
+
 assembler = VectorAssembler(
     inputCols=[
         "has_chip",
@@ -35,7 +35,7 @@ df = assembler.transform(df)
 # Train model
 lr = LinearRegression(featuresCol="features", labelCol="credit_limit")
 lr_model = lr.fit(df)
-lr_model.save(model_path)"""
+lr_model.save(model_path)
 
 # Save processed data
 df.write.csv(output_path)

@@ -1,6 +1,7 @@
 services:
     spark-master:
         image: bitnami/spark:latest
+        command: bin/spark-class org.apache.spark.deploy.master.Master
         container_name: spark-master
         environment:
             - SPARK_MODE=master
@@ -11,22 +12,24 @@ services:
             - '8080:8080' # Spark UI
             - '7077:7077' # Spark master port
         volumes:
-            - ./notebooks:/home/jovyan/work
+            - ./notebooks:/notebooks
             - ./scripts:/scripts
             - ./data:/data
             - ./processed_data:/processed_data
+
         networks:
             - spark-network
 
     spark-worker-1:
         image: bitnami/spark:latest
+        command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
         container_name: spark-worker-1
         environment:
             - SPARK_MODE=worker
             - SPARK_MASTER_URL=spark://spark-master:7077
             - SPARK_WORKER_MEMORY=1G
         volumes:
-            - ./notebooks:/home/jovyan/work
+            - ./notebooks:/notebooks
             - ./scripts:/scripts
             - ./data:/data
             - ./processed_data:/processed_data
@@ -37,13 +40,14 @@ services:
 
     spark-worker-2:
         image: bitnami/spark:latest
+        command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
         container_name: spark-worker-2
         environment:
             - SPARK_MODE=worker
             - SPARK_MASTER_URL=spark://spark-master:7077
             - SPARK_WORKER_MEMORY=1G
         volumes:
-            - ./notebooks:/home/jovyan/work
+            - ./notebooks:/notebooks
             - ./scripts:/scripts
             - ./data:/data
             - ./processed_data:/processed_data
@@ -60,7 +64,7 @@ services:
         ports:
             - '8888:8888'
         volumes:
-            - ./notebooks:/home/jovyan/work
+            - ./notebooks:/notebooks
             - ./scripts:/scripts
             - ./data:/data
             - ./processed_data:/processed_data

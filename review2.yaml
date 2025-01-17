@@ -27,8 +27,8 @@
 3. Start the Cluster:
   Bring up the cluster: docker-compose up -d
 4. Access Jupyter Notebook:
-  Open a terminal inside the spark-master container: docker exec -it spark-master bash
-  Start the Jupyter Notebook server:
+  4.1 - Open a terminal inside the spark-master container: docker exec -it spark-master bash
+  4.2 - Start the Jupyter Notebook server:
     jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --no-browser
     Copy the token URL provided in the terminal output.
     Open your browser and go to http://localhost:8888, then paste the token.
