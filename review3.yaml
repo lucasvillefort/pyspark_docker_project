@@ -1,0 +1,110 @@
+It seems like the custom Docker image is not correctly set up to run Spark. Let's ensure that the Dockerfile and docker-compose.yaml are correctly configured to build and run the Spark application with numpy installed.
+
+Update the Dockerfile to install numpy and set up Spark correctly:
+
+# Use an official Spark base image
+FROM bitnami/spark:latest
+
+# Install numpy
+RUN pip install numpy
+
+# Set the working directory
+WORKDIR /app
+
+# Copy your application code to the container
+COPY . /app
+
+Update your docker-compose.yaml to build the custom image and use the correct entrypoint:
+
+version: '3.8'
+
+services:
+  spark-master:
+    build: .
+    image: custom-spark:latest
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    volumes:
+      - ./notebooks:/notebooks
+      - ./scripts:/scripts
+      - ./data:/data
+      - ./processed_data:/processed_data
+    networks:
+      - spark-network
+
+  spark-worker-1:
+    build: .
+    image: custom-spark:latest
+    container_name: spark-worker-1
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+    volumes:
+      - ./notebooks:/notebooks
+      - ./scripts:/scripts
+      - ./data:/data
+      - ./processed_data:/processed_data
+    depends_on:
+      - spark-master
+    networks:
+      - spark-network
+
+  spark-worker-2:
+    build: .
+    image: custom-spark:latest
+    container_name: spark-worker-2
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+    volumes:
+      - ./notebooks:/notebooks
+      - ./scripts:/scripts
+      - ./data:/data
+      - ./processed_data:/processed_data
+    depends_on:
+      - spark-master
+    networks:
+      - spark-network
+
+  jupyter:
+    image: jupyter/pyspark-notebook
+    container_name: jupyter-notebook
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    ports:
+      - '8888:8888'
+    volumes:
+      - ./notebooks:/notebooks
+      - ./scripts:/scripts
+      - ./data:/data
+      - ./processed_data:/processed_data
+    networks:
+      - spark-network
+
+networks:
+  spark-network:
+    driver: bridge
+
+
+Build and run the containers:
+
+# Navigate to your project directory
+cd /c:/Users/lucas/Desktop/PROJECTS/pyspark_docker_project
+
+# Build the Docker images
+docker-compose build
+
+# Start the containers
+docker-compose up -d
+
+
+Run your spark-submit command:
+docker exec -it spark-master spark-submit /scripts/process_data.py
